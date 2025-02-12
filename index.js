@@ -24,9 +24,16 @@ const db = new sqlite3.Database("battery.db" , (err) => {
 
 
 app.post('/api/register', async (req, res) => {
-    logger.info(`Register request is made from ${username}`);
+
     try {
         const { username, password } = req.body;
+        logger.info(`Register request is made from ${username}`);
+        if (!username || !password) {
+            return res.json({
+                status: "404",
+                error:"Please send username and password"
+            })
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         db.run("INSERT INTO users (username,password) values (?,?) ", [username, hashedPassword], (err,rows) => {
             if (err){
@@ -51,9 +58,16 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-    logger.info(`Login request is made from ${username}`);
+
     try {
         const { username, password } = req.body;
+        logger.info(`Login request is made from ${username}`);
+        if (!username || !password) {
+            return res.json({
+                status: "404",
+                error:"Please send username and password"
+            })
+        }
         let user;
         const getUser = `SELECT * FROM users WHERE username = ?`;
        await db.get(getUser,[username],async (err,rows) => {
@@ -91,6 +105,7 @@ app.get('/api/battery',verifyToken, (req, res) => {
     const getBattery = `SELECT * FROM battery;`;
     db.all(getBattery, [], (err, rows) => {
         if (err) {
+
             return res.status(500).json({ error: err.message });
         }
         res.json(rows);
